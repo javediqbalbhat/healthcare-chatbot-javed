@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Healthcare Assistant Bot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #1f6feb;
+            color: white;
+            padding: 20px 24px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .header p {
+            margin: 8px 0 0 0;
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        .chat-box {
+            padding: 20px;
+            min-height: 420px;
+            max-height: 420px;
+            overflow-y: auto;
+            background: #fbfcfe;
+        }
+
+        .message {
+            margin-bottom: 14px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            line-height: 1.5;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user {
+            background: #dbeafe;
+            margin-left: auto;
+        }
+
+        .bot {
+            background: #eaf7ea;
+            margin-right: auto;
+        }
+
+        .meta {
+            font-size: 12px;
+            color: #555;
+            margin-top: 6px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            padding: 18px 20px 22px 20px;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 15px;
+        }
+
+        button {
+            padding: 14px 18px;
+            border: none;
+            border-radius: 10px;
+            background: #1f6feb;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #165cc0;
+        }
+
+        .sample-questions {
+            padding: 0 20px 20px 20px;
+            background: white;
+        }
+
+        .sample-questions h3 {
+            margin: 0 0 10px 0;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip {
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .chip:hover {
+            background: #eef2ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Healthcare Assistant Bot</h1>
+            <p>Ask about clinic hours, appointments, insurance, services, and more.</p>
+        </div>
+
+        <div class="chat-box" id="chatBox">
+            <div class="message bot">
+                Hello. I’m your healthcare assistant bot. How can I help you today?
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input
+                type="text"
+                id="questionInput"
+                placeholder="Type your question here..."
+                onkeydown="handleEnter(event)"
+            />
+            <button onclick="sendQuestion()">Send</button>
+        </div>
+
+        <div class="sample-questions">
+            <h3>Try these sample questions:</h3>
+            <div class="chips">
+                <div class="chip" onclick="fillQuestion('What are your clinic hours?')">What are your clinic hours?</div>
+                <div class="chip" onclick="fillQuestion('Can I book an appointment?')">Can I book an appointment?</div>
+                <div class="chip" onclick="fillQuestion('Do you accept insurance?')">Do you accept insurance?</div>
+                <div class="chip" onclick="fillQuestion('Where are you located?')">Where are you located?</div>
+                <div class="chip" onclick="fillQuestion('I need urgent help')">I need urgent help</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addMessage(text, sender, confidence = null) {
+            const chatBox = document.getElementById("chatBox");
+            const message = document.createElement("div");
+            message.className = `message ${sender}`;
+            message.innerHTML = text;
+
+            if (sender === "bot" && confidence !== null) {
+                const meta = document.createElement("div");
+                meta.className = "meta";
+                meta.textContent = `Confidence: ${confidence}`;
+                message.appendChild(meta);
+            }
+
+            chatBox.appendChild(message);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function fillQuestion(text) {
+            document.getElementById("questionInput").value = text;
+        }
+
+        function handleEnter(event) {
+            if (event.key === "Enter") {
+                sendQuestion();
+            }
+        }
+
+        async function sendQuestion() {
+            const input = document.getElementById("questionInput");
+            const question = input.value.trim();
+
+            if (!question) {
+                return;
+            }
+
+            addMessage(question, "user");
+            input.value = "";
+
+            try {
+                const response = await fetch("/ask", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ question })
+                });
+
+                const data = await response.json();
+                addMessage(data.answer, "bot", data.confidence);
+            } catch (error) {
+                addMessage("Sorry, something went wrong while contacting the chatbot.", "bot");
+            }
+        }
+    </script>
+</body>
+</html>

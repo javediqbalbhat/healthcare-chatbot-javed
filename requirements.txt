@@ -1,0 +1,5 @@
+flask
+gunicorn
+azure-ai-language-questionanswering
+azure-core
+python-dotenv

@@ -12,17 +12,12 @@ PROJECT_NAME = os.getenv("AZURE_QA_PROJECT", "HealthcareAssistantBot")
 DEPLOYMENT_NAME = os.getenv("AZURE_QA_DEPLOYMENT", "production")
 
 if not ENDPOINT or not KEY:
-    raise ValueError("Missing AZURE_QA_ENDPOINT or AZURE_QA_KEY in .env")
+    print("WARNING: Azure credentials not set")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR)
-
-qa_client = QuestionAnsweringClient(
-    endpoint=ENDPOINT,
-    credential=AzureKeyCredential(KEY)
-)
 
 def get_bot_answer(question: str) -> dict:
     client = QuestionAnsweringClient(
